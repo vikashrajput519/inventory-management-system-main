@@ -9,17 +9,17 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Unit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Picqer\Barcode\BarcodeGeneratorHTML;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with(['category', 'unit'])
+        $products = Product::select('id', 'name')
             ->limit(1)
             ->get();
 
-        
         return view('products.index', [
             'products' => $products,
         ]);
@@ -47,10 +47,10 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         $existingProduct = Product::where('code', $request->get('code'))->first();
-
+        
         if ($existingProduct) {
             $newCode = $this->generateUniqueCode();
-
+            
             $request->merge(['code' => $newCode]);
         }
 
@@ -78,6 +78,7 @@ class ProductController extends Controller
             return redirect()
                 ->back()
                 ->with('success', 'Product has been created with code: ' . $product->code);
+
         } catch (\Exception $e) {
             // Handle any unexpected errors
             return back()->withErrors(['error' => 'Something went wrong while creating the product']);
@@ -89,7 +90,7 @@ class ProductController extends Controller
     {
         do {
             $code = 'PC' . strtoupper(uniqid());
-        } while (Product::where('code', $code)->exists());
+        } while (Product::where('code', $code)->exists()); 
 
         return $code;
     }
@@ -124,7 +125,7 @@ class ProductController extends Controller
 
             // Delete old image if exists
             if ($product->product_image) {
-                \Storage::disk('public')->delete('products/' . $product->product_image);
+                Storage::disk('public')->delete('products/' . $product->product_image);
             }
 
             // Prepare new image
@@ -151,7 +152,7 @@ class ProductController extends Controller
          * Delete photo if exists.
          */
         if ($product->product_image) {
-            \Storage::disk('public')->delete('products/' . $product->product_image);
+            Storage::disk('public')->delete('products/' . $product->product_image);
         }
 
         $product->delete();
