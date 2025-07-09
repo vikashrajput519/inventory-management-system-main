@@ -135,7 +135,7 @@
                                             </label>
 
                                             @if ($units->count() === 1)
-                                                <select name="category_id" id="category_id"
+                                                <select name="unit_id" id="unit_id"
                                                         class="form-select @error('category_id') is-invalid @enderror"
                                                         readonly
                                                 >
